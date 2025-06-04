@@ -1,0 +1,170 @@
+{
+  "5_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 5,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 0.093607167,
+    "DEPLOY_POLL": 0.000529375,
+    "UPDATE_POLL": 0.027165583,
+    "JOIN_POLL": 0.006582375,
+    "TOTAL_VALID_VOTES": 0.49970458300000004,
+    "TOTAL_INVALID_VOTES": 0.000003084,
+    "PROCESS_MESSAGES": 0.6139422090000001,
+    "TALLY_RESULTS": 0.20405812499999998,
+    "TOTAL_TIME": 1.447034834
+  },
+  "10_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 10,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 0.179621375,
+    "DEPLOY_POLL": 0.000053125,
+    "UPDATE_POLL": 0.042255625000000005,
+    "JOIN_POLL": 0.013798166,
+    "TOTAL_VALID_VOTES": 0.9749148750000001,
+    "TOTAL_INVALID_VOTES": 0.000004208,
+    "PROCESS_MESSAGES": 1.245983375,
+    "TALLY_RESULTS": 0.40545687500000005,
+    "TOTAL_TIME": 2.862560625
+  },
+  "20_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 20,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 0.356283583,
+    "DEPLOY_POLL": 0.000048792,
+    "UPDATE_POLL": 0.076802959,
+    "JOIN_POLL": 0.033171292,
+    "TOTAL_VALID_VOTES": 1.969322209,
+    "TOTAL_INVALID_VOTES": 0.000001042,
+    "PROCESS_MESSAGES": 2.483448917,
+    "TALLY_RESULTS": 0.6145432919999999,
+    "TOTAL_TIME": 5.534079125
+  },
+  "50_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 50,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 0.987213833,
+    "DEPLOY_POLL": 0.0005629579999999999,
+    "UPDATE_POLL": 0.193083625,
+    "JOIN_POLL": 0.098983666,
+    "TOTAL_VALID_VOTES": 5.128672084,
+    "TOTAL_INVALID_VOTES": 0.000002333,
+    "PROCESS_MESSAGES": 6.400333166999999,
+    "TALLY_RESULTS": 1.5609471250000002,
+    "TOTAL_TIME": 14.372380417
+  },
+  "100_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 100,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 1.842276083,
+    "DEPLOY_POLL": 0.000056333000000000004,
+    "UPDATE_POLL": 0.373679375,
+    "JOIN_POLL": 0.223691333,
+    "TOTAL_VALID_VOTES": 10.066625540999999,
+    "TOTAL_INVALID_VOTES": 0.000001666,
+    "PROCESS_MESSAGES": 12.622129917,
+    "TALLY_RESULTS": 2.738682208,
+    "TOTAL_TIME": 27.867661082999998
+  },
+  "200_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 200,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 3.5828389580000004,
+    "DEPLOY_POLL": 0.000046375,
+    "UPDATE_POLL": 0.755905083,
+    "JOIN_POLL": 0.48837875000000003,
+    "TOTAL_VALID_VOTES": 20.230819500000003,
+    "TOTAL_INVALID_VOTES": 0.0000012080000000000001,
+    "PROCESS_MESSAGES": 26.319595582999998,
+    "TALLY_RESULTS": 5.616446833,
+    "TOTAL_TIME": 56.994551541
+  },
+  "400_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 400,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 7.403035625,
+    "DEPLOY_POLL": 0.000049334000000000006,
+    "UPDATE_POLL": 1.606601333,
+    "JOIN_POLL": 1.116792916,
+    "TOTAL_VALID_VOTES": 40.107956417000004,
+    "TOTAL_INVALID_VOTES": 0.0000012080000000000001,
+    "PROCESS_MESSAGES": 51.247599167,
+    "TALLY_RESULTS": 10.923106875,
+    "TOTAL_TIME": 112.405651833
+  },
+  "800_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 800,
+      "numInvalidVotes": 0,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 10
+      },
+      "maxVoteOptions": 25
+    },
+    "SIGN_UP": 14.464815917,
+    "DEPLOY_POLL": 0.000602625,
+    "UPDATE_POLL": 3.16130025,
+    "JOIN_POLL": 2.321178792,
+    "TOTAL_VALID_VOTES": 79.83726975,
+    "TOTAL_INVALID_VOTES": 0.0000027079999999999997,
+    "PROCESS_MESSAGES": 104.336209875,
+    "TALLY_RESULTS": 21.889232625,
+    "TOTAL_TIME": 226.012466792
+  }
+}
