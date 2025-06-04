@@ -92,7 +92,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "coordinatorPublicKey": "macipk.198e8b34acf4ad34db8f1238fc02332795d966d6df2d59f95c0bd16dc9b66023",
       "mode": 1,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -194,7 +194,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPublicKey": "macipk.29add77d27341c4cdfc2fb623175ecfd6527a286e3e7ded785d9fd7afbbdf399",
+      "coordinatorPublicKey": "macipk.198e8b34acf4ad34db8f1238fc02332795d966d6df2d59f95c0bd16dc9b66023",
       "mode": 1,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
