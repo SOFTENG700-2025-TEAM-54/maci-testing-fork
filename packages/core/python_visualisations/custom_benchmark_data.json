@@ -83,6 +83,27 @@
     "TALLY_RESULTS": 1.5609471250000002,
     "TOTAL_TIME": 14.372380417
   },
+  "50_users_1000_invalid_votes": {
+    "data": {
+      "numUsers": 50,
+      "numInvalidVotes": 1000,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 0.886651167,
+    "DEPLOY_POLL": 0.000517792,
+    "UPDATE_POLL": 0.31245829199999997,
+    "JOIN_POLL": 0.096341625,
+    "TOTAL_VALID_VOTES": 4.990693708,
+    "TOTAL_INVALID_VOTES": 99.952387959,
+    "PROCESS_MESSAGES": 143.214921167,
+    "TALLY_RESULTS": 1.4941689999999999,
+    "TOTAL_TIME": 250.949740333
+  },
   "100_users_0_invalid_votes": {
     "data": {
       "numUsers": 100,
@@ -187,5 +208,47 @@
     "PROCESS_MESSAGES": 208.736826958,
     "TALLY_RESULTS": 43.780279667,
     "TOTAL_TIME": 460.37459045900005
+  },
+  "100_users_1000_invalid_votes": {
+    "data": {
+      "numUsers": 100,
+      "numInvalidVotes": 1000,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 1.847534667,
+    "DEPLOY_POLL": 0.000646125,
+    "UPDATE_POLL": 0.64723675,
+    "JOIN_POLL": 0.21763233399999998,
+    "TOTAL_VALID_VOTES": 10.22466675,
+    "TOTAL_INVALID_VOTES": 99.581103958,
+    "PROCESS_MESSAGES": 153.226106208,
+    "TALLY_RESULTS": 2.7683641669999997,
+    "TOTAL_TIME": 268.51507466699996
+  },
+  "200_users_1000_invalid_votes": {
+    "data": {
+      "numUsers": 200,
+      "numInvalidVotes": 1000,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 3.603655292,
+    "DEPLOY_POLL": 0.000063833,
+    "UPDATE_POLL": 1.268949542,
+    "JOIN_POLL": 0.48253875,
+    "TOTAL_VALID_VOTES": 19.735062833,
+    "TOTAL_INVALID_VOTES": 98.78808975,
+    "PROCESS_MESSAGES": 163.600052167,
+    "TALLY_RESULTS": 5.517879709,
+    "TOTAL_TIME": 292.996905583
   }
 }
