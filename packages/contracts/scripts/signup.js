@@ -15,6 +15,11 @@ async function main() {
 
   console.log("MACI Address:", maciAddress);
 
+  // Get signers - deployer (0) and voting user (1)
+  const [deployer, votingUser] = await ethers.getSigners();
+  console.log("Deployer/Coordinator address:", deployer.address);
+  console.log("Voting user address:", votingUser.address);
+
   // Get the contract instance
   const maci = await ethers.getContractAt("MACI", maciAddress);
 
@@ -42,20 +47,18 @@ async function main() {
   console.log("X Coordinate:", publicKeyX.toString());
   console.log("Y Coordinate:", publicKeyY.toString());
 
-  // Get signer (first account from Hardhat)
-  const [signer] = await ethers.getSigners();
-
   console.log("\n👤 Signing up with address:", signer.address);
   console.log("Public Key Coordinates:", [publicKeyX.toString(), publicKeyY.toString()]);
 
   try {
-    // Call signUp function
-    const tx = await maci.connect(signer).signUp(
+    // Call signUp function using voting user (account 1)
+    const tx = await maci.connect(votingUser).signUp(
       [publicKeyX.toString(), publicKeyY.toString()],
       "0x", // empty signUpPolicyData for FreeForAllPolicy
     );
 
     console.log("\n📝 Transaction submitted:", tx.hash);
+    console.log("From address:", votingUser.address);
 
     // Wait for confirmation
     const receipt = await tx.wait();

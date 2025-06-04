@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand, PublicKey } from "@maci-protocol/domainobjs";
 import fs from "fs";
 import path from "path";
 
@@ -13,69 +13,99 @@ async function main() {
     return;
   }
 
-  console.log("🗳️  MACI Voting Script");
-  console.log("======================");
   console.log("MACI Address:", maciAddress);
 
-  // Get the contract instances
+  // Get signers - deployer (0) and voting user (1)
+  const [deployer, votingUser] = await ethers.getSigners();
+  console.log("Deployer/Coordinator address:", deployer.address);
+  console.log("Voting user address:", votingUser.address);
+
+  // Get the contract instance
   const maci = await ethers.getContractAt("MACI", maciAddress);
 
-  try {
-    // Check available polls
-    console.log("\n📊 Checking available polls...");
-    const nextPollId = await maci.nextPollId();
-    console.log("Number of polls:", nextPollId.toString());
+  // Get next poll ID (latest poll)
+  const nextPollId = await maci.nextPollId();
+  const pollId = nextPollId - 1n; // Latest poll
 
-    if (nextPollId.toString() === "0") {
-      console.log("❌ No polls available. Create a poll first with:");
-      console.log("pnpm deploy-poll:localhost");
+  if (pollId < 0) {
+    console.error("❌ No polls found. Deploy a poll first with:");
+    console.error("npx hardhat run deploy-poll.js --network localhost");
+    return;
+  }
+
+  console.log("Poll ID:", pollId.toString());
+
+  // Get the poll contract - handle both single address and array responses
+  let pollAddress;
+  try {
+    const pollResult = await maci.polls(pollId);
+    console.log("Poll result:", pollResult);
+
+    // If it's an array, take the first element (main Poll contract)
+    if (Array.isArray(pollResult)) {
+      pollAddress = pollResult[0];
+      console.log("Poll address (from array):", pollAddress);
+    } else {
+      pollAddress = pollResult;
+      console.log("Poll address (single):", pollAddress);
+    }
+  } catch (error) {
+    console.error("Error getting poll address:", error.message);
+    return;
+  }
+
+  const poll = await ethers.getContractAt("Poll", pollAddress);
+
+  // Check voting period - try different method names
+  let startTime, duration, endTime;
+  try {
+    // Try newer method names first
+    try {
+      startTime = await poll.startDate();
+      duration = await poll.duration();
+    } catch (e) {
+      // Try alternative method names
+      try {
+        startTime = await poll.startTime();
+        duration = await poll.duration();
+      } catch (e2) {
+        // Try getting from config
+        startTime = await poll.deployTime();
+        const endDate = await poll.endDate();
+        duration = endDate - startTime;
+      }
+    }
+
+    endTime = startTime + duration;
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    console.log("\n⏰ Poll Timing:");
+    console.log("Current time:", new Date().toLocaleString());
+    console.log("Start time:", new Date(Number(startTime) * 1000).toLocaleString());
+    console.log("End time:", new Date(Number(endTime) * 1000).toLocaleString());
+
+    if (currentTime < startTime) {
+      console.error("❌ Voting has not started yet");
       return;
     }
 
-    // Vote on the first poll (poll ID 0)
-    const pollId = 0;
-    console.log(`\n🗳️  Voting on Poll ${pollId}...`);
-
-    // Get poll contract
-    const pollContracts = await maci.getPoll(pollId);
-    const pollAddress = pollContracts.poll;
-    console.log("Poll Address:", pollAddress);
-
-    const poll = await ethers.getContractAt("Poll", pollAddress);
-
-    // Check poll timing
-    console.log("\n⏰ Checking poll timing...");
-    try {
-      const startDate = await poll.startDate();
-      const endDate = await poll.endDate();
-      const currentTime = Math.floor(Date.now() / 1000);
-
-      console.log("Start Date:", new Date(Number(startDate) * 1000).toLocaleString());
-      console.log("End Date:", new Date(Number(endDate) * 1000).toLocaleString());
-      console.log("Current Time:", new Date(currentTime * 1000).toLocaleString());
-
-      if (currentTime > endDate) {
-        console.log("❌ Poll has ended. Cannot vote.");
-        return;
-      } else if (currentTime < startDate) {
-        console.log("❌ Poll has not started yet. Cannot vote.");
-        return;
-      } else {
-        console.log("✅ Poll is active and accepting votes.");
-      }
-    } catch (e) {
-      console.log("⚠️  Could not check timing, proceeding anyway...");
+    if (currentTime > endTime) {
+      console.error("❌ Voting period has ended");
+      return;
     }
 
-    // Get signer
-    const [signer] = await ethers.getSigners();
-    console.log("\n👤 Voting with address:", signer.address);
+    console.log("✅ Voting is currently active");
+  } catch (error) {
+    console.log("⚠️ Unable to check voting period timing, proceeding anyway...");
+    console.log("Error:", error.message);
+  }
 
-    // Check if user has signed up to MACI
-    const maciSignups = await maci.totalSignups();
-    console.log("Total MACI signups:", maciSignups.toString());
+  // Check if anyone is signed up
+  try {
+    const totalSignups = await maci.totalSignups();
+    console.log("\n👥 Total signups:", totalSignups.toString());
 
-    if (maciSignups.toString() === "1") {
+    if (totalSignups === 0n) {
       console.log("❌ No users have signed up to MACI yet. Sign up first with:");
       console.log("npx hardhat run signup.js --network localhost");
       return;
@@ -118,19 +148,24 @@ async function main() {
     // Sign the command
     const signature = command.sign(userKeypair.privateKey);
 
-    // Get coordinator public key for encryption
-    const coordinatorPublicKey = await poll.coordinatorPublicKey();
-    const coordinatorKeypair = new Keypair();
-    // Note: In production, you'd use the actual coordinator's public key
+    // Load coordinator keys from testing_setup.json
+    const testingSetup = JSON.parse(fs.readFileSync(path.join(process.cwd(), "testing_setup.json"), "utf8"));
+    const coordinatorPublicKeyStr = testingSetup["public-key"];
+
+    if (!coordinatorPublicKeyStr) {
+      console.error("❌ Coordinator public key not found in testing_setup.json");
+      return;
+    }
+
+    const coordinatorPublicKey = PublicKey.deserialize(coordinatorPublicKeyStr);
+    console.log("\n🔑 Using Coordinator Public Key from testing_setup.json:");
+    console.log("Public Key:", coordinatorPublicKeyStr);
 
     // Generate ephemeral keypair for message encryption
     const ephemeralKeypair = new Keypair();
 
     // Create shared key for encryption
-    const sharedKey = Keypair.generateEcdhSharedKey(
-      ephemeralKeypair.privateKey,
-      coordinatorKeypair.publicKey, // Use actual coordinator public key
-    );
+    const sharedKey = Keypair.generateEcdhSharedKey(ephemeralKeypair.privateKey, coordinatorPublicKey);
 
     // Encrypt the command
     const message = command.encrypt(signature, sharedKey);
@@ -138,67 +173,39 @@ async function main() {
     console.log("\n🔐 Message encrypted and ready to publish");
 
     try {
-      // Publish the message to the poll
+      // Publish the message to the poll using voting user (account 1)
       console.log("🔄 Publishing vote message...");
+      console.log("Using voting user address:", votingUser.address);
 
       const tx = await poll
-        .connect(signer)
+        .connect(votingUser) // Use voting user (account 1) instead of deployer
         .publishMessage(message.asContractParam(), ephemeralKeypair.publicKey.asContractParam());
 
       console.log("Transaction submitted:", tx.hash);
       const receipt = await tx.wait();
-      console.log("Transaction confirmed in block:", receipt.blockNumber);
+      console.log("✅ Vote published successfully!");
+      console.log("Block number:", receipt.blockNumber);
+      console.log("Gas used:", receipt.gasUsed.toString());
 
-      // Parse PublishMessage event
+      // Look for PublishMessage event
       const iface = new ethers.Interface([
-        "event PublishMessage(tuple(uint256[10] data) _message, tuple(uint256 x, uint256 y) _encryptionPublicKey)",
+        "event PublishMessage(tuple(uint256[10] data) _message, tuple(uint256 x, uint256 y) _encPubKey)",
       ]);
 
-      let messagePublished = false;
       for (const log of receipt.logs) {
         try {
           const parsedLog = iface.parseLog(log);
           if (parsedLog.name === "PublishMessage") {
-            console.log("\n🎉 Vote published successfully!");
+            console.log("\n📧 Message Published Event:");
             console.log("Message data length:", parsedLog.args._message.data.length);
-            console.log("Encryption public key X:", parsedLog.args._encryptionPublicKey.x.toString());
-            console.log("Encryption public key Y:", parsedLog.args._encryptionPublicKey.y.toString());
-            messagePublished = true;
+            console.log("Encryption public key:", [
+              parsedLog.args._encPubKey.x.toString(),
+              parsedLog.args._encPubKey.y.toString(),
+            ]);
           }
         } catch (e) {
-          // Not a PublishMessage event
+          // Not a PublishMessage event, skip
         }
-      }
-
-      if (messagePublished) {
-        // Check updated message count
-        try {
-          const numMessages = await poll.numMessages();
-          console.log("Total messages in poll:", numMessages.toString());
-        } catch (e) {
-          console.log("Could not check message count");
-        }
-
-        // Save vote data
-        const voteData = {
-          pollId: pollId,
-          pollAddress: pollAddress,
-          userStateIndex: userStateIndex,
-          voteOptionIndex: voteOptionIndex,
-          voteWeight: voteWeight,
-          nonce: nonce,
-          transactionHash: receipt.hash,
-          blockNumber: receipt.blockNumber,
-          votedAt: new Date().toISOString(),
-          ephemeralPublicKey: ephemeralKeypair.publicKey.serialize(),
-          ephemeralPrivateKey: ephemeralKeypair.privateKey.serialize(),
-        };
-
-        fs.writeFileSync(
-          path.join(process.cwd(), `vote-${pollId}-${Date.now()}.json`),
-          JSON.stringify(voteData, null, 2),
-        );
-        console.log(`\n💾 Vote data saved to vote file`);
       }
     } catch (error) {
       console.error("\n❌ Error publishing vote:", error.message);
