@@ -61,7 +61,7 @@ function saveTimerResult(numUsers: number, numInvalidVotes: number) {
     data: {
       numUsers,
       numInvalidVotes,
-      maxVoteOptions: MAX_VOTE_OPTIONS,
+      maxVoteOptions: Number(MAX_VOTE_OPTIONS),
       treeDepths: TREE_DEPTHS,
     },
     ...timerDiffS,
@@ -192,14 +192,13 @@ function runProfile(numUsers: number, numInvalidVotes: number) {
   saveTimerResult(numUsers, numInvalidVotes);
 }
 
-// runProfile(5, 0);
-// runProfile(10, 0);
-// runProfile(20, 0);
-// runProfile(50, 0);
+runProfile(5, 0);
+runProfile(10, 0);
+runProfile(20, 0);
+runProfile(50, 0);
 // runProfile(100, 0);
 // runProfile(200, 0);
 // runProfile(400, 0);
 // runProfile(800, 0);
-runProfile(1600, 0);
-// runProfile(3200, 0);
+// runProfile(1600, 0);
 saveTimerResults();

@@ -166,5 +166,26 @@
     "PROCESS_MESSAGES": 104.336209875,
     "TALLY_RESULTS": 21.889232625,
     "TOTAL_TIME": 226.012466792
+  },
+  "1600_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 1600,
+      "numInvalidVotes": 0,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 3,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 29.110695334,
+    "DEPLOY_POLL": 0.000615334,
+    "UPDATE_POLL": 10.769882041999999,
+    "JOIN_POLL": 5.1378445,
+    "TOTAL_VALID_VOTES": 162.83671279200001,
+    "TOTAL_INVALID_VOTES": 0.000003,
+    "PROCESS_MESSAGES": 208.736826958,
+    "TALLY_RESULTS": 43.780279667,
+    "TOTAL_TIME": 460.37459045900005
   }
 }
