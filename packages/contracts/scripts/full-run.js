@@ -45,8 +45,7 @@ async function main() {
   console.log("3. Sign up a user");
   console.log("4. Update poll times");
   console.log("5. Deploy a poll");
-  console.log("6. Check poll status");
-  console.log("7. Submit a vote");
+  console.log("6. Submit a vote");
   console.log();
 
   try {
@@ -77,8 +76,6 @@ async function main() {
     console.log(`   Public Key: ${coordinatorPubKey}`);
     console.log(`   Private Key: ${coordinatorPrivKey.substring(0, 20)}...`);
 
-    await sleep(2000);
-
     // Step 1: Deploy MACI contracts
     const step1 = await runCommand("pnpm deploy:localhost", "Step 1: Deploying MACI contracts");
     if (!step1) {
@@ -86,15 +83,11 @@ async function main() {
       return;
     }
 
-    await sleep(3000);
-
     // Step 2: Sign up user
     const step2 = await runCommand("pnpm maci:signup", "Step 2: Signing up user to MACI");
     if (!step2) {
       console.log("⚠️ Signup failed, but continuing...");
     }
-
-    await sleep(2000);
 
     // Step 3: Update poll times
     const step3 = await runCommand("pnpm maci:update-poll-times", "Step 3: Updating poll times");
@@ -103,8 +96,6 @@ async function main() {
       return;
     }
 
-    await sleep(2000);
-
     // Step 4: Deploy poll
     const step4 = await runCommand("pnpm deploy-poll:localhost", "Step 4: Deploying new poll");
     if (!step4) {
@@ -112,23 +103,11 @@ async function main() {
       return;
     }
 
-    await sleep(3000);
-
-    // Step 5: Check poll status
-    const step5 = await runCommand("pnpm maci:check-poll", "Step 5: Checking poll status");
-
-    await sleep(2000);
-
-    // Step 6: Submit vote
-    const step6 = await runCommand("pnpm maci:vote", "Step 6: Submitting vote");
-    if (!step6) {
+    // Step 5: Submit vote
+    const step5 = await runCommand("pnpm maci:vote", "Step 5: Submitting vote");
+    if (!step5) {
       console.log("⚠️ Vote submission failed, but continuing...");
     }
-
-    await sleep(2000);
-
-    // Step 7: Final poll check
-    const step7 = await runCommand("pnpm maci:check-poll", "Step 7: Final poll status check");
 
     // Final summary
     console.log("\n" + "=".repeat(60));
@@ -141,9 +120,7 @@ async function main() {
     console.log(`✅ User signed up: ${step2 ? "SUCCESS" : "FAILED"}`);
     console.log(`✅ Poll times updated: ${step3 ? "SUCCESS" : "FAILED"}`);
     console.log(`✅ Poll deployed: ${step4 ? "SUCCESS" : "FAILED"}`);
-    console.log(`✅ Poll checked: ${step5 ? "SUCCESS" : "FAILED"}`);
-    console.log(`✅ Vote submitted: ${step6 ? "SUCCESS" : "FAILED"}`);
-    console.log(`✅ Final check: ${step7 ? "SUCCESS" : "FAILED"}`);
+    console.log(`✅ Vote submitted: ${step5 ? "SUCCESS" : "FAILED"}`);
 
     if (step1 && step4) {
       console.log("\n🚀 Next Steps (after voting period ends):");
