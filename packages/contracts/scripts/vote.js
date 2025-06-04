@@ -56,48 +56,46 @@ async function main() {
 
   const poll = await ethers.getContractAt("Poll", pollAddress);
 
-  // Check voting period - try different method names
-  let startTime, duration, endTime;
+  // Check voting period - use the correct method
+  let startTime, endTime;
   try {
-    // Try newer method names first
-    try {
-      startTime = await poll.startDate();
-      duration = await poll.duration();
-    } catch (e) {
-      // Try alternative method names
-      try {
-        startTime = await poll.startTime();
-        duration = await poll.duration();
-      } catch (e2) {
-        // Try getting from config
-        startTime = await poll.deployTime();
-        const endDate = await poll.endDate();
-        duration = endDate - startTime;
-      }
-    }
+    console.log("\n⏰ Checking poll timing...");
 
-    endTime = startTime + duration;
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Use the correct method from the Poll contract
+    const [pollStartDate, pollEndDate] = await poll.getStartAndEndDate();
+    startTime = pollStartDate;
+    endTime = pollEndDate;
 
-    console.log("\n⏰ Poll Timing:");
+    const currentTime = BigInt(Math.floor(Date.now() / 1000));
+
+    console.log("Poll Timing:");
     console.log("Current time:", new Date().toLocaleString());
     console.log("Start time:", new Date(Number(startTime) * 1000).toLocaleString());
     console.log("End time:", new Date(Number(endTime) * 1000).toLocaleString());
+    console.log("Duration:", Number(endTime - startTime), "seconds");
 
     if (currentTime < startTime) {
       console.error("❌ Voting has not started yet");
+      const waitTime = Number(startTime - currentTime);
+      console.log(`   Voting starts in ${waitTime} seconds (${Math.ceil(waitTime / 60)} minutes)`);
       return;
     }
 
     if (currentTime > endTime) {
       console.error("❌ Voting period has ended");
+      const endedTime = Number(currentTime - endTime);
+      console.log(`   Voting ended ${endedTime} seconds ago (${Math.ceil(endedTime / 60)} minutes ago)`);
       return;
     }
 
-    console.log("✅ Voting is currently active");
+    const timeLeft = Number(endTime - currentTime);
+    console.log(`✅ Voting is currently active (${timeLeft} seconds remaining, ~${Math.ceil(timeLeft / 60)} minutes)`);
   } catch (error) {
     console.log("⚠️ Unable to check voting period timing, proceeding anyway...");
     console.log("Error:", error.message);
+
+    // If timing check fails, we'll still proceed but warn the user
+    console.log("💡 Make sure the voting period is active before voting");
   }
 
   // Check if anyone is signed up

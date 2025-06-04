@@ -4,7 +4,7 @@ import path from "path";
 // Generate current timestamps
 const now = Math.floor(Date.now() / 1000);
 const startTime = now;
-const endTime = startTime + 10000;
+const endTime = startTime + 30000;
 
 console.log("Updating poll times:");
 console.log("Current time:", new Date().toLocaleString());
