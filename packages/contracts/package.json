@@ -222,7 +222,8 @@
     "maci:signup": "hardhat run scripts/signup.js --network localhost",
     "maci:vote": "hardhat run scripts/vote.js --network localhost",
     "maci:check-poll": "hardhat run scripts/check-poll.js --network localhost",
-    "maci:update-poll-times": "node scripts/update-poll-times.js"
+    "maci:update-poll-times": "node scripts/update-poll-times.js",
+    "maci:full-run": "node scripts/full-run.js"
   },
   "dependencies": {
     "@excubiae/contracts": "^0.11.0",

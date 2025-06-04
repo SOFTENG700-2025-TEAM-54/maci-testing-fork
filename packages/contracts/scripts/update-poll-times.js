@@ -3,8 +3,8 @@ import path from "path";
 
 // Generate current timestamps
 const now = Math.floor(Date.now() / 1000);
-const startTime = now + 10; // Start in 10 seconds
-const endTime = startTime + 20; // End 20 seconds after start
+const startTime = now;
+const endTime = startTime + 250; // Poll ends 250 seconds after it starts
 
 console.log("Updating poll times:");
 console.log("Current time:", new Date().toLocaleString());
