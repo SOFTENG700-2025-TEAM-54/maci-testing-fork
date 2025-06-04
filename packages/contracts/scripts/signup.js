@@ -1,10 +1,11 @@
 import { ethers } from "hardhat";
 import { Keypair } from "@maci-protocol/domainobjs";
 import fs from "fs";
+import path from "path";
 
 async function main() {
   // Get the deployed MACI contract
-  const deployedContracts = JSON.parse(fs.readFileSync("./deployed-contracts.json", "utf8"));
+  const deployedContracts = JSON.parse(fs.readFileSync(path.join(process.cwd(), "deployed-contracts.json"), "utf8"));
   const maciAddress = deployedContracts.localhost?.named?.MACI?.address;
 
   if (!maciAddress) {

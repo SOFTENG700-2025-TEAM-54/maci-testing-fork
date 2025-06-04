@@ -218,7 +218,11 @@
     "benchmark:zksync-sepolia": "pnpm run benchmark --network zksync_sepolia",
     "benchmark:polygon-zkevm": "pnpm run benchmark --network polygon_zkevm",
     "benchmark:polygon-cardona-zkevm": "pnpm run benchmark --network polygon_cardona_zkevm",
-    "check-poll": "hardhat run check-poll.js --network localhost"
+    "maci:generate-keypair": "node scripts/generate-keypair.js",
+    "maci:signup": "hardhat run scripts/signup.js --network localhost",
+    "maci:vote": "hardhat run scripts/vote.js --network localhost",
+    "maci:check-poll": "hardhat run scripts/check-poll.js --network localhost",
+    "maci:update-poll-times": "node scripts/update-poll-times.js"
   },
   "dependencies": {
     "@excubiae/contracts": "^0.11.0",

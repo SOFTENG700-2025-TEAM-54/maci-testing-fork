@@ -1,8 +1,9 @@
 import { Keypair } from "@maci-protocol/domainobjs";
 import fs from "fs";
+import path from "path";
 
 // Read the deployed contracts to get the correct MACI address
-const deployedContracts = JSON.parse(fs.readFileSync("./deployed-contracts.json", "utf8"));
+const deployedContracts = JSON.parse(fs.readFileSync(path.join(process.cwd(), "deployed-contracts.json"), "utf8"));
 const maciAddress = deployedContracts.localhost?.named?.MACI?.address || "0x82D50AD3C1091866E258Fd0f1a7cC9674609D254";
 
 // Generate a new keypair
