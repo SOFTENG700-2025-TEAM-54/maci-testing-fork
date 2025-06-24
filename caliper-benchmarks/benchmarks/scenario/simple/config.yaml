@@ -1,31 +1,44 @@
 test:
-  name: "MACI Voting Benchmark"
-  description: >
-    Benchmark test for MACI voting contract.
-    Workers simulate load generation—each worker can submit multiple vote transactions,
-    representing numerous simulated voters.
+  name: maci-vote-benchmark
+  description: Benchmark for MACI vote submissions
   workers:
     number: 5
   rounds:
-    - label: "vote"
-      # Define a fixed number of vote transactions to submit during this round.
+    - label: vote-submission
+      description: Submit encrypted votes to MACI Poll contract
       txNumber: 1000
       rateControl:
         type: fixed-rate
         opts:
-          tps: 25 # Target 25 transactions per second overall (spread across workers)
+          tps: 10
       workload:
-        module: "../../samples/ethereum/submitVote.js"
+        module: workload/ethereum/submitVote.js
         arguments:
-          # Add any workload-specific arguments here, e.g., parameters for generating unique voter IDs
-          votersPerWorker: 200
+          pollId: 0
+          maxVoteOptions: 25
+          coordinatorPublicKey: "macipk.946c756cb8588f7169d37e23a98b92051359d64321cf7372a75757b5e9d5590d" # Replace with actual coordinator public key
+          maxVoteWeight: 100
+          usersPerWorker: 10
 
 monitors:
-  # Optional: Configure monitors if you want to collect additional metrics (e.g., Prometheus, Docker metrics)
-  transaction:
-    - module: prometheus
   resource:
-    - module: docker
+    - module: prometheus
       options:
-        interval: 1
-        containers: ["all"]
+        url: "http://localhost:9090"
+        metrics:
+          include: [dev*, couch*, peer*, orderer*]
+          queries:
+            - name: "Avg Memory (MB)"
+              query: 'sum(container_memory_rss{name=~".+"}) by (name)'
+              step: 1
+              label: name
+              statistic: avg
+              multiplier: 0.000001
+
+  transaction:
+    - module: logging
+      options:
+        logfile: logs/maci-benchmark.log
+
+observers:
+  - none

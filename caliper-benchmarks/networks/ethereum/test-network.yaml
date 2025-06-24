@@ -1,35 +1,34 @@
+name: MACI-Ethereum-Test
+version: "2.0.0"
+
 caliper:
   blockchain: ethereum
-  # Optional start/stop commands to control your local test network.
-  command:
-    start: "docker-compose -f network/ethereum/1node-clique/docker-compose.yml up -d && sleep 3"
-    end: "docker-compose -f network/ethereum/1node-clique/docker-compose.yml down"
+
+channels:
+  - channelName: mychannel
+    contracts:
+      - id: Poll
+        address: "0xYourPollContractAddress" # Replace with actual deployed Poll contract address
+        gas:
+          gasLimit: 3000000
+          gasPrice: 20000000000
+        abi: ../../abi/Poll.abi.json # Path to Poll contract ABI
 
 ethereum:
-  # URL of your Ethereum node (must be a WebSocket endpoint)
-  url: "https://eth-sepolia.g.alchemy.com/v2/b6UdaiWULIzetbDZLhoH5"
+  url: wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID # Replace with your Sepolia WebSocket URL
+  contractDeployerAddress: "0xYourDeployerAddress" # Replace with your deployer address
+  contractDeployerAddressPrivateKey: "0xYourPrivateKey" # Replace with your private key
+  fromAddressSeed: "0xYourSeedAddress" # Replace with seed address
+  fromAddressPrivateKeySeed: "0xYourSeedPrivateKey" # Replace with seed private key
+  transactionConfirmationBlocks: 1
+  accounts:
+    - address: "0xYourAccountAddress" # Replace with your account address
+      privateKey: "0xYourAccountPrivateKey" # Replace with your account private key
 
-  # Account used to deploy smart contracts.
-  # Provide the private key if you want Caliper to sign transactions "raw".
-  contractDeployerAddress: "0xA79053FE93e83a2b8c112A0C963Ed1B5Ba93F5ef"
-  contractDeployerAddressPrivateKey: "00856a60334f85073cce7d9c4cc32cc473d6abd5a93ef98d982e30db58b572d6"
-  # If using a private key, the password is not used. Otherwise, set contractDeployerAddressPassword.
-  contractDeployerAddressPassword: ""
-
-  # Benchmark (from) address: account used to invoke the contract methods during the benchmark.
-  fromAddress: "0xA79053FE93e83a2b8c112A0C963Ed1B5Ba93F5ef"
-  fromAddressPrivateKey: "00856a60334f85073cce7d9c4cc32cc473d6abd5a93ef98d982e30db58b572d6"
-  fromAddressPassword: ""
-
-  # Number of block confirmations to wait for a transaction to be considered successful.
-  transactionConfirmationBlocks: 3
-
-  # Contracts to be deployed or attached to before running the benchmark.
-  contracts:
-    simple:
-      # Path to the JSON file containing the contract's name, ABI, bytecode, and deployment gas settings.
-      path: "src/contract/ethereum/simple/simple.json"
-      gas:
-        open: 45000
-        query: 100000
-        transfer: 70000
+# MACI-specific configuration for the workload
+maciConfig:
+  pollId: 0
+  maxVoteOptions: 25
+  coordinatorPublicKey: "macipk.946c756cb8588f7169d37e23a98b92051359d64321cf7372a75757b5e9d5590d" # Replace with actual coordinator public key
+  maxVoteWeight: 100
+  usersPerWorker: 10
