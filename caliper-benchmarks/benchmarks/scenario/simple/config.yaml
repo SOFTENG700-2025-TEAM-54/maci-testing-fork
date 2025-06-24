@@ -1,0 +1,31 @@
+test:
+  name: "MACI Voting Benchmark"
+  description: >
+    Benchmark test for MACI voting contract.
+    Workers simulate load generation—each worker can submit multiple vote transactions,
+    representing numerous simulated voters.
+  workers:
+    number: 5
+  rounds:
+    - label: "vote"
+      # Define a fixed number of vote transactions to submit during this round.
+      txNumber: 1000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 25 # Target 25 transactions per second overall (spread across workers)
+      workload:
+        module: "../../samples/ethereum/submitVote.js"
+        arguments:
+          # Add any workload-specific arguments here, e.g., parameters for generating unique voter IDs
+          votersPerWorker: 200
+
+monitors:
+  # Optional: Configure monitors if you want to collect additional metrics (e.g., Prometheus, Docker metrics)
+  transaction:
+    - module: prometheus
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers: ["all"]
