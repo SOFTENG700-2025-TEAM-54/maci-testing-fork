@@ -16,7 +16,6 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
-    "custom-benchmarks": "ts-node ts/__custom_benchmarks__/index.ts",
     "benchmarks": "ts-node ts/__benchmarks__/index.ts",
     "types": "tsc -p tsconfig.json --noEmit",
     "test:maciState": "ts-mocha --exit ts/__tests__/MaciState.test.ts",

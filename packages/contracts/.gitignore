@@ -3,3 +3,6 @@ docs
 # deploy-config.json
 deployed-contracts.json
 proofs
+
+bench_proofs
+bench_proofs_from_6000_users_run

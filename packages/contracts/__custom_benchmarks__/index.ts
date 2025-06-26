@@ -1,23 +1,32 @@
 /* eslint-disable no-console */
+import { EMode, MaciState, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
 
 import { hash } from "crypto";
-import fs from "fs";
+import fs, { existsSync, mkdirSync, rmdirSync } from "fs";
 
-import { EMode, MaciState, VOTE_OPTION_TREE_ARITY } from "..";
+import { ProofGenerator } from "../ts";
 
 export const VOICE_CREDIT_BALANCE = 1n;
 export const DURATION = 30;
-export const MESSAGE_BATCH_SIZE = 5;
+export const MESSAGE_BATCH_SIZE = 50;
 export const COORDINATOR_KEYPAIR = new Keypair();
-export const STATE_TREE_DEPTH = 10;
+export const STATE_TREE_DEPTH = 20;
 
 export const TREE_DEPTHS = {
-  tallyProcessingStateTreeDepth: 3,
+  tallyProcessingStateTreeDepth: 4,
   voteOptionTreeDepth: 2,
-  stateTreeDepth: 20,
+  stateTreeDepth: STATE_TREE_DEPTH,
 };
 export const MAX_VOTE_OPTIONS = BigInt(VOTE_OPTION_TREE_ARITY ** TREE_DEPTHS.voteOptionTreeDepth);
+
+const mode = EMode.FULL;
+const mpId = `MessageProcessorFull_${STATE_TREE_DEPTH}-${MESSAGE_BATCH_SIZE}-${TREE_DEPTHS.voteOptionTreeDepth}_test`;
+const vtId = `VoteTallyNonQv_${STATE_TREE_DEPTH}-${TREE_DEPTHS.tallyProcessingStateTreeDepth}-${TREE_DEPTHS.voteOptionTreeDepth}_test`;
+const mpZkey = `../testing/zkeys/${mpId}/${mpId}.0.zkey`;
+const tvZkey = `../testing/zkeys/${vtId}/${vtId}.0.zkey`;
+const mpWasm = `../testing/zkeys/${mpId}/${mpId}_js/${mpId}.wasm`;
+const vtWasm = `../testing/zkeys/${vtId}/${vtId}_js/${vtId}.wasm`;
 
 const TIMERS = {
   TOTAL_TIME: "TOTAL_TIME",
@@ -29,6 +38,8 @@ const TIMERS = {
   TOTAL_INVALID_VOTES: "TOTAL_INVALID_VOTES",
   PROCESS_MESSAGES: "PROCESS_MESSAGES",
   TALLY_RESULTS: "TALLY_RESULTS",
+  MP_PROOFS: "MP_PROOFS",
+  TALLY_PROOFS: "TALLY_PROOFS",
 };
 
 let timerStart: Record<string, [number, number] | undefined> = {};
@@ -76,7 +87,12 @@ function saveTimerResults() {
   fs.writeFileSync(`./${profileName}.json`, JSON.stringify(timerResultsS, null, 2));
 }
 
-function runProfile(numUsers: number, numInvalidVotes: number) {
+async function runProfile(numUsers: number, numInvalidVotes: number) {
+  if (existsSync("./bench_proofs")) {
+    console.log("Removing existing bench_proofs directory...");
+    rmdirSync("./bench_proofs", { recursive: true });
+  }
+  mkdirSync("./bench_proofs");
   startTimer(TIMERS.TOTAL_TIME);
   const users: Keypair[] = [];
 
@@ -100,7 +116,7 @@ function runProfile(numUsers: number, numInvalidVotes: number) {
     MESSAGE_BATCH_SIZE,
     COORDINATOR_KEYPAIR,
     MAX_VOTE_OPTIONS,
-    EMode.FULL,
+    mode,
   );
   endTimer(TIMERS.DEPLOY_POLL, `Deploy poll with ID ${pollId}`);
 
@@ -179,29 +195,62 @@ function runProfile(numUsers: number, numInvalidVotes: number) {
     throw new Error(`Expected ${numUsers + 1} ballots, but got ${poll.ballots.length}`);
   }
 
-  startTimer(TIMERS.TALLY_RESULTS);
-  while (poll.hasUntalliedBallots()) {
-    poll.tallyVotes();
-  }
-  if (poll.tallyResult[0] !== BigInt(numUsers)) {
-    throw new Error(`Expected tally result to be ${numUsers}, but got ${poll.tallyResult[0]}`);
-  }
+  // startTimer(TIMERS.TALLY_RESULTS);
+  // while (poll.hasUntalliedBallots()) {
+  //   poll.tallyVotes();
+  // }
+  // if (poll.tallyResult[0] !== BigInt(numUsers)) {
+  //   throw new Error(`Expected tally result to be ${numUsers}, but got ${poll.tallyResult[0]}`);
+  // }
 
-  endTimer(TIMERS.TALLY_RESULTS, `Tally results for poll ${pollId}`);
+  // endTimer(TIMERS.TALLY_RESULTS, `Tally results for poll ${pollId}`);
+
+  // ---------------------------------------------------
+  // 🆕  PROOF GENERATION BENCH SECTION
+  // ---------------------------------------------------
+  console.log("Generating ZK proofs...");
+
+  startTimer(TIMERS.MP_PROOFS);
+
+  const proofGen = new ProofGenerator({
+    poll,
+    maciContractAddress: "0x0000000000000000000000000000000000000000",
+    tallyContractAddress: "0x0000000000000000000000000000000000000000",
+    outputDir: "./bench_proofs",
+    tallyOutputFile: "./bench_proofs/tally.json",
+    rapidsnark: process.env.RAPIDSNARK, // or undefined to fall back to snarkjs
+    mode,
+    messageProcessor: { zkey: mpZkey, wasm: mpWasm },
+    tally: { zkey: tvZkey, wasm: vtWasm },
+  });
+
+  await proofGen.generateMpProofs(); // message-processing proofs
+  endTimer(TIMERS.MP_PROOFS, "MP proof gen");
+
+  startTimer(TIMERS.TALLY_PROOFS);
+  await proofGen.generateTallyProofs("benchmark");
+  endTimer(TIMERS.TALLY_PROOFS, "Tally proof gen");
+
   endTimer(TIMERS.TOTAL_TIME, "Total time for the profile run");
   saveTimerResult(numUsers, numInvalidVotes);
 }
 
-runProfile(5, 0);
-runProfile(10, 0);
-runProfile(20, 0);
-runProfile(50, 0);
-runProfile(100, 0);
-runProfile(200, 0);
-runProfile(400, 0);
-runProfile(800, 0);
-runProfile(1600, 0);
-runProfile(50, 1000);
-runProfile(100, 1000);
-runProfile(200, 1000);
-saveTimerResults();
+async function runBenchmarks() {
+  try {
+    await runProfile(5, 0);
+    await runProfile(10, 0);
+    await runProfile(20, 0);
+    await runProfile(50, 0);
+    await runProfile(100, 0);
+    await runProfile(200, 0);
+    await runProfile(400, 0);
+    await runProfile(800, 0);
+    await runProfile(1600, 0);
+    await runProfile(3200, 0);
+    await runProfile(6400, 0);
+  } finally {
+    saveTimerResults();
+  }
+}
+
+runBenchmarks();

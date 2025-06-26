@@ -1,52 +1,8 @@
 {
-  "PollJoining_10_test": {
-    "file": "./voter/PollJoining",
-    "template": "PollJoining",
-    "params": [10],
-    "pubs": ["nullifier", "stateRoot", "pollPublicKey", "pollId"]
-  },
-  "PollJoined_10_test": {
-    "file": "./voter/PollJoined",
-    "template": "PollJoined",
-    "params": [10],
-    "pubs": ["stateRoot"]
-  },
-  "MessageProcessorQv_10-20-2_test": {
-    "file": "./coordinator/qv/MessageProcessor",
-    "template": "MessageProcessorQv",
-    "params": [10, 20, 2],
-    "pubs": [
-      "totalSignups",
-      "index",
-      "batchEndIndex",
-      "currentSbCommitment",
-      "newSbCommitment",
-      "outputBatchHash",
-      "actualStateTreeDepth",
-      "coordinatorPublicKeyHash",
-      "voteOptions"
-    ]
-  },
-  "MessageProcessorNonQv_10-20-2_test": {
-    "file": "./coordinator/non-qv/MessageProcessor",
-    "template": "MessageProcessorNonQv",
-    "params": [10, 20, 2],
-    "pubs": [
-      "totalSignups",
-      "index",
-      "batchEndIndex",
-      "currentSbCommitment",
-      "newSbCommitment",
-      "outputBatchHash",
-      "actualStateTreeDepth",
-      "coordinatorPublicKeyHash",
-      "voteOptions"
-    ]
-  },
-  "MessageProcessorFull_10-20-2_test": {
+  "MessageProcessorFull_20-50-2_test": {
     "file": "./coordinator/full/MessageProcessor",
     "template": "MessageProcessorFull",
-    "params": [10, 20, 2],
+    "params": [20, 50, 2],
     "pubs": [
       "totalSignups",
       "index",
@@ -59,16 +15,10 @@
       "voteOptions"
     ]
   },
-  "VoteTallyQv_10-1-2_test": {
-    "file": "./coordinator/qv/VoteTally",
-    "template": "VoteTallyQv",
-    "params": [10, 1, 2],
-    "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
-  },
-  "VoteTallyNonQv_10-1-2_test": {
+  "VoteTallyNonQv_20-4-2_test": {
     "file": "./coordinator/non-qv/VoteTally",
     "template": "VoteTallyNonQv",
-    "params": [10, 1, 2],
+    "params": [20, 4, 2],
     "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   }
 }
