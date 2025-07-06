@@ -1,0 +1,26 @@
+{
+  "name": "MACI-Ethereum-Test",
+  "version": "2.0.0",
+  "caliper": {
+    "blockchain": "ethereum"
+  },
+  "ethereum": {
+    "url": "wss://sepolia.infura.io/ws/v3/410da5bdc9a8414b8569ff7fc591266088c585b337da3d6bc002b9",
+    "contractDeployerAddress": "0x4baDAa26E4D3D961565a84FC16929fC6C14633e3",
+    "contractDeployerAddressPrivateKey": "7d48255e95b90069fee18705503746bf7fc591266088c585b337da3d6bc002b9",
+    "fromAddress": "0x4baDAa26E4D3D961565a84FC16929fC6C14633e3",
+    "fromAddressPrivateKey": "7d48255e95b90069fee18705503746bf7fc591266088c585b337da3d6bc002b9",
+    "transactionConfirmationBlocks": 1,
+    "contracts": {
+      "Poll": {
+        "address": "0x8CcC00373139694CdD6822a59AAfEE54752a0505",
+        "abi": "abi/Poll.json",
+        "gas": {
+          "open": 45000,
+          "query": 100000,
+          "transfer": 70000
+        }
+      }
+    }
+  }
+}
