@@ -2,7 +2,7 @@ test:
   name: maci-vote-benchmark
   description: Benchmark for MACI vote submissions
   workers:
-    number: 5
+    number: 1
   rounds:
     - label: vote-submission
       description: Submit encrypted votes to MACI Poll contract
