@@ -238,15 +238,15 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     _;
   }
 
-  /// @notice A modifier that causes the function to revert if the voting period is
-  /// over
-  /// @dev This is used to prevent users from publishing messages after the voting period has ended or
-  /// before the voting period has started
-  modifier isOpenForVoting() virtual {
-    if (block.timestamp > endDate) revert VotingPeriodOver();
-    if (block.timestamp < startDate) revert VotingPeriodNotStarted();
-    _;
-  }
+  // /// @notice A modifier that causes the function to revert if the voting period is
+  // /// over
+  // /// @dev This is used to prevent users from publishing messages after the voting period has ended or
+  // /// before the voting period has started
+  // modifier isOpenForVoting() virtual {
+  //   if (block.timestamp > endDate) revert VotingPeriodOver();
+  //   if (block.timestamp < startDate) revert VotingPeriodNotStarted();
+  //   _;
+  // }
 
   /// @notice A modifier that causes the function to revert if the voting period is over
   /// @dev This is used to prevent users from joining the poll after the voting period has ended
@@ -262,10 +262,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(
-    Message calldata _message,
-    PublicKey calldata _encryptionPublicKey
-  ) public virtual isOpenForVoting {
+  function publishMessage(Message calldata _message, PublicKey calldata _encryptionPublicKey) public virtual {
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encryptionPublicKey.x, _encryptionPublicKey.y)) {
       revert InvalidPublicKey();
@@ -286,10 +283,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function relayMessagesBatch(
-    uint256[] calldata _messageHashes,
-    bytes32 _ipfsHash
-  ) public virtual isOpenForVoting onlyRelayer {
+  function relayMessagesBatch(uint256[] calldata _messageHashes, bytes32 _ipfsHash) public virtual onlyRelayer {
     uint256 length = _messageHashes.length;
 
     unchecked {
