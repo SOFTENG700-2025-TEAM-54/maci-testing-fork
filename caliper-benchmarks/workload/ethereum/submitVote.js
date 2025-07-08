@@ -9,12 +9,22 @@ class SimpleWorkload extends WorkloadModuleBase {
   }
 
   async submitTransaction() {
+    // Message struct: { data: uint256[10] }
+    const message = {
+      data: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    };
+
+    // PublicKey struct: { x: uint256, y: uint256 }
+    const publicKey = {
+      x: "12345678901234567890",
+      y: "98765432109876543210",
+    };
+
     const request = {
       contract: "Poll",
       readOnly: false,
       verb: "publishMessage",
-      args: [123, 456], // dummy data matching Message & PublicKey calldata
-      invokerIdentity: "User1",
+      args: [message, publicKey],
     };
 
     return this.sutAdapter.sendRequests(request);

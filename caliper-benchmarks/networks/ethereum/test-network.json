@@ -13,6 +13,11 @@
     "transactionConfirmationBlocks": 1,
     "contracts": {
       "Poll": {
+        "estimateGas": true,
+        "gas": {
+          "query": 100000,
+          "transfer": 70000
+        },
         "address": "0x8CcC00373139694CdD6822a59AAfEE54752a0505",
         "abi": [
           {
@@ -1296,12 +1301,7 @@
             "stateMutability": "view",
             "type": "function"
           }
-        ],
-        "gas": {
-          "open": 45000,
-          "query": 100000,
-          "transfer": 70000
-        }
+        ]
       }
     }
   }

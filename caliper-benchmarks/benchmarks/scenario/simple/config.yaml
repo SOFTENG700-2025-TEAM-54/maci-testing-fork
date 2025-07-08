@@ -6,7 +6,7 @@ test:
   rounds:
     - label: vote-submission
       description: Submit encrypted votes to MACI Poll contract
-      txNumber: 1000
+      txNumber: 10
       rateControl:
         type: fixed-rate
         opts:
