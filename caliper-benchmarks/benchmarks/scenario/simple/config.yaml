@@ -14,9 +14,9 @@ test:
       workload:
         module: workload/ethereum/submitVote.js
         arguments:
-          pollId: 3
+          pollId: 0
           maxVoteOptions: 25
-          coordinatorPublicKey: "macipk.946c756cb8588f7169d37e23a98b92051359d64321cf7372a75757b5e9d5590d" # Replace with actual coordinator public key
+          coordinatorPublicKey: "macipk.1ccff4a32d72c267800bbdab8f9a40707fbe31b4db81017516e6e94dcc31a7a9" # Replace with actual coordinator public key
           maxVoteWeight: 100
           usersPerWorker: 10
 

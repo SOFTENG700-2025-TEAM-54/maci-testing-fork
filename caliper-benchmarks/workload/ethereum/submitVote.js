@@ -1,7 +1,11 @@
 "use strict";
 
 const { WorkloadModuleBase } = require("@hyperledger/caliper-core");
-const { Keypair, VoteCommand, Signature, PublicKey } = require("@maci-protocol/domainobjs");
+const {
+  Keypair,
+  VoteCommand,
+  PublicKey,
+} = require("/home/chris/maci-testing-fork/packages/domainobjs/build/ts/index.js");
 
 class SimpleWorkload extends WorkloadModuleBase {
   async initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext) {
