@@ -10,7 +10,7 @@ test:
       rateControl:
         type: fixed-rate
         opts:
-          tps: 1
+          tps: 0.25
       workload:
         module: workload/ethereum/submitVote.js
         arguments:

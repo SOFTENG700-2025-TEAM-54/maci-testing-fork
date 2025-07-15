@@ -5,12 +5,21 @@ const {
   Keypair,
   VoteCommand,
   PublicKey,
-} = require("/home/chris/maci-testing-fork/packages/domainobjs/build/ts/index.js");
+} = require("/home/chriskwon0/uni/maci-testing-fork/packages/domainobjs/build/ts/index.js");
+const { PrivateKey } = require("/home/chriskwon0/uni/maci-testing-fork/packages/domainobjs/build/ts/index.js");
+const { ethers } = require("ethers");
+
+const workerPrivateKeys = ["00856a60334f85073cce7d9c4cc32cc473d6abd5a93ef98d982e30db58b572d6"];
 
 class SimpleWorkload extends WorkloadModuleBase {
   async initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext) {
     await super.initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext);
-    this.user = new Keypair();
+    const privKey = workerPrivateKeys[workerIndex % workerPrivateKeys.length];
+    const wallet = new ethers.Wallet(privKey);
+    this.ethAddress = wallet.address;
+    console.log("ETH address (from):", this.ethAddress);
+    this.ethPrivateKey = privKey;
+    this.user = new Keypair(new PrivateKey(privKey));
 
     this.pollId = 0;
 
@@ -144,6 +153,8 @@ class SimpleWorkload extends WorkloadModuleBase {
     console.log("messageParam:", messageParam);
     console.log("publicKeyParam:", publicKeyParam);
 
+    console.log("Sending from:", this.sutContext.fromAddress);
+
     // 4. Prepare the request for Caliper with higher gas limit
     const request = {
       contract: "Poll",
@@ -151,8 +162,13 @@ class SimpleWorkload extends WorkloadModuleBase {
       args: [messageParam, publicKeyParam],
       readOnly: false,
       options: {
-        gas: 1000000, // Increased gas limit
-        gasPrice: "20000000000", // 20 gwei
+        gas: 1000000,
+        gasPrice: "20000000000",
+        from: this.ethAddress,
+        signingCredential: {
+          key: this.ethPrivateKey,
+          type: "privateKeyHex",
+        },
       },
     };
 
