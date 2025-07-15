@@ -5,7 +5,7 @@
     "blockchain": "ethereum"
   },
   "ethereum": {
-    "url": "wss://sepolia.infura.io/ws/v3/410da5bdc9a8414b8569ff7c0b10a3c1",
+    "url": "wss://eth-sepolia.g.alchemy.com/v2/7x6ly0nGi3Ims-dDalTiU",
     "contractDeployerAddress": "0x4baDAa26E4D3D961565a84FC16929fC6C14633e3",
     "contractDeployerAddressPrivateKey": "7d48255e95b90069fee18705503746bf7fc591266088c585b337da3d6bc002b9",
     "fromAddress": "0x4baDAa26E4D3D961565a84FC16929fC6C14633e3",

@@ -152,7 +152,7 @@
                     </tr>
 
                     <tr>
-                         <td>vote-submission</td> <td>2</td> <td>8</td> <td>6.7</td> <td>36.94</td> <td>36.30</td> <td>36.62</td> <td>0.3</td>
+                         <td>vote-submission</td> <td>20</td> <td>0</td> <td>1.1</td> <td>49.48</td> <td>30.70</td> <td>40.12</td> <td>0.4</td>
                     </tr>
                 </table>
             </div>
@@ -162,7 +162,7 @@
                 <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
   type: fixed-rate
   opts:
-    tps: 10
+    tps: 1
 </pre>
                         <h3>Performance metrics for vote-submission</h3>
                             <table style="min-width: 100%;">
@@ -170,7 +170,7 @@
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>vote-submission</td> <td>2</td> <td>8</td> <td>6.7</td> <td>36.94</td> <td>36.30</td> <td>36.62</td> <td>0.3</td>
+                                     <td>vote-submission</td> <td>20</td> <td>0</td> <td>1.1</td> <td>49.48</td> <td>30.70</td> <td>40.12</td> <td>0.4</td>
                                 </tr>
                             </table>
                         <h3>Resource utilization for vote-submission</h3>
@@ -186,11 +186,11 @@ workers:
 rounds:
   - label: vote-submission
     description: Submit encrypted votes to MACI Poll contract
-    txNumber: 10
+    txNumber: 20
     rateControl:
       type: fixed-rate
       opts:
-        tps: 10
+        tps: 1
     workload:
       module: workload&#x2F;ethereum&#x2F;submitVote.js
       arguments:

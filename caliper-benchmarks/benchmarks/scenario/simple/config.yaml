@@ -6,17 +6,17 @@ test:
   rounds:
     - label: vote-submission
       description: Submit encrypted votes to MACI Poll contract
-      txNumber: 10
+      txNumber: 20
       rateControl:
         type: fixed-rate
         opts:
-          tps: 10
+          tps: 1
       workload:
         module: workload/ethereum/submitVote.js
         arguments:
           pollId: 0
           maxVoteOptions: 25
-          coordinatorPublicKey: "macipk.1ccff4a32d72c267800bbdab8f9a40707fbe31b4db81017516e6e94dcc31a7a9" # Replace with actual coordinator public key
+          coordinatorPublicKey: "macipk.1ccff4a32d72c267800bbdab8f9a40707fbe31b4db81017516e6e94dcc31a7a9"
           maxVoteWeight: 100
           usersPerWorker: 10
 
@@ -26,7 +26,7 @@ monitors:
       options:
         url: "http://localhost:9090"
         metrics:
-          include: [dev*, couch*, peer*, orderer*]
+          include: [".*"] # Match all containers/processes
           queries:
             - name: "Avg Memory (MB)"
               query: 'sum(container_memory_rss{name=~".+"}) by (name)'
@@ -35,10 +35,30 @@ monitors:
               statistic: avg
               multiplier: 0.000001
 
+            - name: "Network In (MB)"
+              query: 'sum(rate(container_network_receive_bytes_total{name=~".+"}[1m])) by (name)'
+              step: 1
+              label: name
+              statistic: avg
+              multiplier: 0.000001
+
+            - name: "Network Out (MB)"
+              query: 'sum(rate(container_network_transmit_bytes_total{name=~".+"}[1m])) by (name)'
+              step: 1
+              label: name
+              statistic: avg
+              multiplier: 0.000001
+
+        charting:
+          bar:
+            metrics: [all]
+          polar:
+            metrics: ["Avg Memory (MB)"]
+
   transaction:
-    - module: logging
+    - module: prometheus
       options:
-        logfile: logs/maci-benchmark.log
+        scrapePort: 3000
 
 observers:
   - none
