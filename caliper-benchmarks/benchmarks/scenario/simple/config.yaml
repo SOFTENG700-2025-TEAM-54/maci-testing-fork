@@ -2,7 +2,7 @@ test:
   name: maci-vote-benchmark
   description: Benchmark for MACI vote submissions
   workers:
-    number: 1
+    number: 2
   rounds:
     - label: vote-submission
       description: Submit encrypted votes to MACI Poll contract
@@ -10,7 +10,7 @@ test:
       rateControl:
         type: fixed-rate
         opts:
-          tps: 0.25
+          tps: 0.5
       workload:
         module: workload/ethereum/submitVote.js
         arguments:

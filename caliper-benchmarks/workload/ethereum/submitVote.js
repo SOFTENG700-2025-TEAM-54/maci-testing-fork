@@ -162,8 +162,6 @@ class SimpleWorkload extends WorkloadModuleBase {
       args: [messageParam, publicKeyParam],
       readOnly: false,
       options: {
-        gas: 1000000,
-        gasPrice: "20000000000",
         from: this.ethAddress,
         signingCredential: {
           key: this.ethPrivateKey,
