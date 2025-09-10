@@ -244,69 +244,72 @@ export class ProofGenerator {
   }
 
   /**
-   * Generate tally proofs
-   *
-   * @param networkName - current network name
-   * @param chainId - current chain id
-   * @returns tally proofs
+   * Generate tally circuit inputs
    */
-  async generateTallyProofs(
-    networkName: string,
-    chainId?: string,
-    options?: IGenerateProofsOptions,
-  ): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
-    logMagenta({ text: info(`Generating proofs of vote tallying...`) });
-    performance.mark("tally-proofs-start");
-
+  generateTallyCircuitInputs(): TCircuitInputs[] {
     const { tallyBatchSize } = this.poll.batchSizes;
     const numStateLeaves = this.poll.pollStateLeaves.length;
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
     if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
       totalTallyBatches += 1;
     }
+    const inputs: TCircuitInputs[] = [];
+
+    while (this.poll.hasUntalliedBallots()) {
+      inputs.push(this.poll.tallyVotes() as unknown as TCircuitInputs);
+      logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
+    }
+
+    return inputs;
+  }
+
+  async generateProofsForCircuitInputs(circuitInputs: TCircuitInputs[]): Promise<Proof[]> {
+    const tallyVerifyingKey = await extractVerifyingKey(this.tally.zkey, false);
+
+    const proofs = await Promise.all(
+      circuitInputs.map(async (circuitInput, index) =>
+        this.generateProofs(circuitInput, this.tally, `tally_${index}.json`, tallyVerifyingKey),
+      ),
+    ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
+
+    // cleanup threads
+    await cleanThreads();
+
+    return proofs;
+  }
+
+  /**
+   * Generate tally proofs
+   *
+   * @param networkName - current network name
+   * @param chainId - current chain id
+   * @returns tally proofs
+   */
+  async validateProofs(
+    networkName: string,
+    proofs: Proof[],
+    finalCircuitInput: TCircuitInputs,
+    chainId?: string,
+    options?: IGenerateProofsOptions,
+  ): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
+    logMagenta({ text: info(`Generating proofs of vote tallying...`) });
+    performance.mark("tally-proofs-start");
 
     try {
-      let tallyCircuitInputs: TCircuitInputs;
-      const inputs: TCircuitInputs[] = [];
-
-      while (this.poll.hasUntalliedBallots()) {
-        tallyCircuitInputs = this.poll.tallyVotes() as unknown as TCircuitInputs;
-
-        inputs.push(tallyCircuitInputs);
-
-        logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
-      }
-
-      logMagenta({ text: info("Wait until proof generation is finished") });
-
-      const tallyVerifyingKey = await extractVerifyingKey(this.tally.zkey, false);
-
-      const proofs = await Promise.all(
-        inputs.map((circuitInputs, index) =>
-          this.generateProofs(circuitInputs, this.tally, `tally_${index}.json`, tallyVerifyingKey).then((data) => {
-            options?.onBatchComplete?.({ current: index, total: totalTallyBatches, proofs: data });
-            return data;
-          }),
-        ),
-      ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
-
-      logGreen({ text: success("Proof generation is finished") });
-
-      // cleanup threads
-      await cleanThreads();
+      const tallyCircuitInputs: TCircuitInputs = finalCircuitInput;
 
       // verify the results
       // Compute newResultsCommitment
       const newResultsCommitment = generateTreeCommitment(
         this.poll.tallyResult,
-        BigInt(asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish)),
+        BigInt(asHex(tallyCircuitInputs.newResultsRootSalt as BigNumberish)),
         this.poll.treeDepths.voteOptionTreeDepth,
       );
 
       // compute newSpentVoiceCreditsCommitment
       const newSpentVoiceCreditsCommitment = hashLeftRight(
         this.poll.totalSpentVoiceCredits,
-        BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
+        BigInt(asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
       );
 
       let newPerVoteOptionSpentVoiceCreditsCommitment: bigint | undefined;
@@ -320,15 +323,15 @@ export class ProofGenerator {
         chainId,
         mode: this.mode,
         tallyAddress: this.tallyContractAddress,
-        newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
+        newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment as BigNumberish),
         results: {
           tally: this.poll.tallyResult.map((x) => x.toString()),
-          salt: asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish),
+          salt: asHex(tallyCircuitInputs.newResultsRootSalt as BigNumberish),
           commitment: asHex(newResultsCommitment),
         },
         totalSpentVoiceCredits: {
           spent: this.poll.totalSpentVoiceCredits.toString(),
-          salt: asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish),
+          salt: asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt as BigNumberish),
           commitment: asHex(newSpentVoiceCreditsCommitment),
         },
       };
@@ -337,7 +340,7 @@ export class ProofGenerator {
         // Compute newPerVoteOptionSpentVoiceCreditsCommitment
         newPerVoteOptionSpentVoiceCreditsCommitment = generateTreeCommitment(
           this.poll.perVoteOptionSpentVoiceCredits,
-          BigInt(asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
+          BigInt(asHex(tallyCircuitInputs.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
           this.poll.treeDepths.voteOptionTreeDepth,
         );
 
@@ -351,7 +354,7 @@ export class ProofGenerator {
         // update perVoteOptionSpentVoiceCredits in the tally file data
         tallyFileData.perVoteOptionSpentVoiceCredits = {
           tally: this.poll.perVoteOptionSpentVoiceCredits.map((x) => x.toString()),
-          salt: asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish),
+          salt: asHex(tallyCircuitInputs.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish),
           commitment: asHex(newPerVoteOptionSpentVoiceCreditsCommitment),
         };
       } else {

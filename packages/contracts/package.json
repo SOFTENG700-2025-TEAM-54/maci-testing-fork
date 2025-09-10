@@ -35,6 +35,7 @@
   },
   "scripts": {
     "custom-benchmarks": "tsx __custom_benchmarks__/index.ts",
+    "speed-up-measurement": "tsx __custom_benchmarks__/speed_measurement.ts",
     "watch": "tsc --watch",
     "hardhat": "hardhat node",
     "compileSol": "TS_NODE_TRANSPILE_ONLY=1 ts-node ./scripts/compileSol.ts",

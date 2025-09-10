@@ -251,14 +251,47 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   const circuitInputs = loadCircuitInputs("./bench_proofs/circuit-inputs.json");
   endTimer(TIMERS.LOAD_CIRCUIT_INPUTS, "Load circuit inputs");
 
-  const proofs: Proof[] = [];
-  for (let i = 0; i < circuitInputs.length / 5; i += 1) {
-    startTimer(`PROOF_GEN_BATCH_${i}`);
-    const tallyCircuitInputs = circuitInputs.slice(i * 5, i * 5 + 5);
-    // eslint-disable-next-line no-await-in-loop
-    const proofBatch = await proofGen.generateProofsForCircuitInputs(tallyCircuitInputs);
-    proofs.push(...proofBatch);
-    endTimer(`PROOF_GEN_BATCH_${i}`, `Tally proof gen batch ${i}`);
+  function computeBatchBounds(total: number, numMachines: number): [number, number][] {
+    // Never create more batches than we have work for
+    const batches = Math.min(numMachines, total);
+
+    const base = Math.floor(total / batches); // minimum size per batch
+    const extra = total % batches; // first `extra` batches take one more
+    const bounds: [number, number][] = [];
+
+    let cursor = 0;
+    for (let i = 0; i < batches; i += 1) {
+      const size = base + (i < extra ? 1 : 0);
+      bounds.push([cursor, cursor + size]);
+      cursor += size;
+    }
+    return bounds;
+  }
+
+  const NUM_MACHINES = [1, 2, 4, 8, 16, 32];
+  let proofs: Proof[] = [];
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const numMachines of NUM_MACHINES) {
+    proofs = [];
+
+    // Pre-compute batch boundaries
+    const bounds = computeBatchBounds(circuitInputs.length, numMachines);
+
+    for (let i = 0; i < bounds.length; i += 1) {
+      const [start, end] = bounds[i];
+      const tallyCircuitInputs = circuitInputs.slice(start, end);
+      startTimer(`TALLY_PROOFS_MACHINES_${numMachines}_BATCH_${i}_NUM_INPUTS_${tallyCircuitInputs.length}`);
+
+      // eslint-disable-next-line no-await-in-loop
+      const proofBatch = await proofGen.generateProofsForCircuitInputs(tallyCircuitInputs);
+      proofs.push(...proofBatch);
+
+      endTimer(
+        `TALLY_PROOFS_MACHINES_${numMachines}_BATCH_${i}_NUM_INPUTS_${tallyCircuitInputs.length}`,
+        `Tally proofs for ${numMachines} machines batch ${i}`,
+      );
+    }
   }
 
   startTimer(TIMERS.VALIDATE_PROOFS);
@@ -275,12 +308,12 @@ async function runBenchmarks() {
     // await runProfile(10, 0);
     // await runProfile(20, 0);
     // await runProfile(50, 0);
-    await runProfile(100, 0);
-    await runProfile(200, 0);
-    await runProfile(400, 0);
-    await runProfile(800, 0);
-    await runProfile(1600, 0);
-    // await runProfile(3200, 0);
+    // await runProfile(100, 0);
+    // await runProfile(200, 0);
+    // await runProfile(400, 0);
+    // await runProfile(800, 0);
+    // await runProfile(1600, 0);
+    await runProfile(3200, 0);
     // await runProfile(6400, 0);
   } finally {
     saveTimerResults();

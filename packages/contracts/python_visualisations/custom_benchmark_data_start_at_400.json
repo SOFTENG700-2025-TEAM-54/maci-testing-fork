@@ -1,0 +1,112 @@
+{
+  "400_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 400,
+      "numInvalidVotes": 0,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 4,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 5.284151917,
+    "DEPLOY_POLL": 0.000586959,
+    "UPDATE_POLL": 2.077562666,
+    "JOIN_POLL": 0.8650565,
+    "TOTAL_VALID_VOTES": 6.4687944953,
+    "TOTAL_INVALID_VOTES": 0.0000015,
+    "PROCESS_MESSAGES": 35.448406834000004,
+    "TOTAL_TIME": 71.801548375,
+    "MP_PROOFS": 0.451731417,
+    "TALLY_PROOFS": 63.716267583000004
+  },
+  "800_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 800,
+      "numInvalidVotes": 0,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 4,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 10.480434542000001,
+    "DEPLOY_POLL": 0.000694958,
+    "UPDATE_POLL": 4.250666,
+    "JOIN_POLL": 1.899020417,
+    "TOTAL_VALID_VOTES": 12.9390777234,
+    "TOTAL_INVALID_VOTES": 0.000004791,
+    "PROCESS_MESSAGES": 71.40810870899999,
+    "TOTAL_TIME": 144.29648125,
+    "MP_PROOFS": 0.46166666700000003,
+    "TALLY_PROOFS": 125.449720625
+  },
+  "1600_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 1600,
+      "numInvalidVotes": 0,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 4,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 20.940610708,
+    "DEPLOY_POLL": 0.000739833,
+    "UPDATE_POLL": 8.592993875,
+    "JOIN_POLL": 4.119043167,
+    "TOTAL_VALID_VOTES": 25.7833486319,
+    "TOTAL_INVALID_VOTES": 0.000002,
+    "PROCESS_MESSAGES": 142.533978083,
+    "TOTAL_TIME": 288.289596167,
+    "MP_PROOFS": 0.456441209,
+    "TALLY_PROOFS": 261.905163417
+  },
+  "3200_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 3200,
+      "numInvalidVotes": 0,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 4,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 41.847970417,
+    "DEPLOY_POLL": 0.0005735,
+    "UPDATE_POLL": 17.422994708999997,
+    "JOIN_POLL": 8.968181334,
+    "TOTAL_VALID_VOTES": 51.6055725447,
+    "TOTAL_INVALID_VOTES": 0.000007667,
+    "PROCESS_MESSAGES": 285.408652458,
+    "TOTAL_TIME": 578.021317625,
+    "MP_PROOFS": 0.462376042,
+    "TALLY_PROOFS": 526.74608475
+  },
+  "6400_users_0_invalid_votes": {
+    "data": {
+      "numUsers": 6400,
+      "numInvalidVotes": 0,
+      "maxVoteOptions": 25,
+      "treeDepths": {
+        "tallyProcessingStateTreeDepth": 4,
+        "voteOptionTreeDepth": 2,
+        "stateTreeDepth": 20
+      }
+    },
+    "SIGN_UP": 83.837447875,
+    "DEPLOY_POLL": 0.001839208,
+    "UPDATE_POLL": 35.49553125,
+    "JOIN_POLL": 19.335454666999997,
+    "TOTAL_VALID_VOTES": 103.4263142291,
+    "TOTAL_INVALID_VOTES": 0.000005792000000000001,
+    "PROCESS_MESSAGES": 575.791753459,
+    "TOTAL_TIME": 1164.142462292,
+    "MP_PROOFS": 0.481478375,
+    "TALLY_PROOFS": 1140.200072375
+  }
+}
