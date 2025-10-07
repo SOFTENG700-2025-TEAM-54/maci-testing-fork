@@ -5,8 +5,8 @@ const {
   Keypair,
   VoteCommand,
   PublicKey,
-} = require("/home/chriskwon0/uni/maci-testing-fork/packages/domainobjs/build/ts/index.js");
-const { PrivateKey } = require("/home/chriskwon0/uni/maci-testing-fork/packages/domainobjs/build/ts/index.js");
+} = require("/home/chris/Desktop/projects/maci-testing-fork/packages/domainobjs/build/ts/index.js"); // Updated path
+const { PrivateKey } = require("/home/chris/Desktop/projects/maci-testing-fork/packages/domainobjs/build/ts/index.js"); // Updated path
 const { ethers } = require("ethers");
 
 const workerPrivateKeys = ["00856a60334f85073cce7d9c4cc32cc473d6abd5a93ef98d982e30db58b572d6"];

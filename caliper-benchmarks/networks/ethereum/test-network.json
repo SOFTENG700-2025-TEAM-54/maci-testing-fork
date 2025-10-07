@@ -6,8 +6,8 @@
   },
   "ethereum": {
     "url": "wss://eth-sepolia.g.alchemy.com/v2/7x6ly0nGi3Ims-dDalTiU",
-    "contractDeployerAddress": "0x4baDAa26E4D3D961565a84FC16929fC6C14633e3",
-    "contractDeployerAddressPrivateKey": "7d48255e95b90069fee18705503746bf7fc591266088c585b337da3d6bc002b9",
+    "contractDeployerAddress": "0x8689fF1C035314D6Ef54C96998e25276e2e5a19C",
+    "contractDeployerAddressPrivateKey": "322ba7ba2d805e71b7b1495f3d187180c8bf0c719531931d30e7cec1dd65fd38",
     "fromAddressSeed": "1e0bb9a3a19de109a4f037c815f50a6bdcaaf213f9ed2a128bc396ec16dedaf02ec1c09b5a8c4764db7e178492a030a30f0b2536dff1f2f9129d5011920be6df",
     "transactionConfirmationBlocks": 1,
     "contracts": {
