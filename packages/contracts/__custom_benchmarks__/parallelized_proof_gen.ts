@@ -184,28 +184,6 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   });
   endTimer(TIMERS.TOTAL_VALID_VOTES, "Total valid votes time");
 
-  // startTimer(TIMERS.TOTAL_INVALID_VOTES);
-  // for (let i = 0; i < numInvalidVotes; i += 1) {
-  //   const userIndex = i % numUsers;
-  //   const userKeypair = users[userIndex]; // Use modulo to avoid index out of bounds
-  //   const command = new VoteCommand(
-  //     BigInt(userIndex + 1),
-  //     userKeypair.publicKey,
-  //     1n,
-  //     VOICE_CREDIT_BALANCE * 2n, // invalid vote weight
-  //     1n,
-  //     BigInt(pollId),
-  //   );
-
-  //   const signature = command.sign(userKeypair.privateKey);
-
-  //   const ecdhKeypair = new Keypair();
-  //   const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
-  //   const message = command.encrypt(signature, sharedKey);
-  //   poll.publishMessage(message, ecdhKeypair.publicKey);
-  // }
-  // endTimer(TIMERS.TOTAL_INVALID_VOTES, "Total invalid votes time");
-
   console.log("Processing all messages...");
   startTimer(TIMERS.PROCESS_MESSAGES);
   poll.processAllMessages();
@@ -214,16 +192,6 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   if (poll.ballots.length !== numUsers + 1) {
     throw new Error(`Expected ${numUsers + 1} ballots, but got ${poll.ballots.length}`);
   }
-
-  // startTimer(TIMERS.TALLY_RESULTS);
-  // while (poll.hasUntalliedBallots()) {
-  //   poll.tallyVotes();
-  // }
-  // if (poll.tallyResult[0] !== BigInt(numUsers)) {
-  //   throw new Error(`Expected tally result to be ${numUsers}, but got ${poll.tallyResult[0]}`);
-  // }
-
-  // endTimer(TIMERS.TALLY_RESULTS, `Tally results for poll ${pollId}`);
 
   // ---------------------------------------------------
   // 🆕  PROOF GENERATION BENCH SECTION
@@ -256,47 +224,14 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   const circuitInputs = loadCircuitInputs("./bench_proofs/circuit-inputs.json");
   endTimer(TIMERS.LOAD_CIRCUIT_INPUTS, "Load circuit inputs");
 
-  function computeBatchBounds(total: number, numMachines: number): [number, number][] {
-    // Never create more batches than we have work for
-    const batches = Math.min(numMachines, total);
-
-    const base = Math.floor(total / batches); // minimum size per batch
-    const extra = total % batches; // first `extra` batches take one more
-    const bounds: [number, number][] = [];
-
-    let cursor = 0;
-    for (let i = 0; i < batches; i += 1) {
-      const size = base + (i < extra ? 1 : 0);
-      bounds.push([cursor, cursor + size]);
-      cursor += size;
-    }
-    return bounds;
-  }
-
-  const NUM_MACHINES = [1, 2, 4, 8, 16, 32, 64];
-  let proofs: Proof[] = [];
-
-  // eslint-disable-next-line no-restricted-syntax
-  for (const numMachines of NUM_MACHINES) {
-    proofs = [];
-
-    // Pre-compute batch boundaries
-    const bounds = computeBatchBounds(circuitInputs.length, numMachines);
-
-    for (let i = 0; i < bounds.length; i += 1) {
-      const [start, end] = bounds[i];
-      const tallyCircuitInputs = circuitInputs.slice(start, end);
-      startTimer(`TALLY_PROOFS_MACHINES_${numMachines}_BATCH_${i}_NUM_INPUTS_${tallyCircuitInputs.length}`);
-
-      // eslint-disable-next-line no-await-in-loop
-      const proofBatch = await proofGen.generateProofsForCircuitInputs(tallyCircuitInputs);
-      proofs.push(...proofBatch);
-
-      endTimer(
-        `TALLY_PROOFS_MACHINES_${numMachines}_BATCH_${i}_NUM_INPUTS_${tallyCircuitInputs.length}`,
-        `Tally proofs for ${numMachines} machines batch ${i}`,
-      );
-    }
+  const proofs: Proof[] = [];
+  for (let i = 0; i < circuitInputs.length / 5; i += 1) {
+    startTimer(`PROOF_GEN_BATCH_${i}`);
+    const tallyCircuitInputs = circuitInputs.slice(i * 5, i * 5 + 5);
+    // eslint-disable-next-line no-await-in-loop
+    const proofBatch = await proofGen.generateProofsForCircuitInputs(tallyCircuitInputs);
+    proofs.push(...proofBatch);
+    endTimer(`PROOF_GEN_BATCH_${i}`, `Tally proof gen batch ${i}`);
   }
 
   startTimer(TIMERS.VALIDATE_PROOFS);
@@ -309,16 +244,16 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
 
 async function runBenchmarks() {
   try {
-    // await runProfile(5, 0);
-    // await runProfile(10, 0);
-    // await runProfile(20, 0);
-    // await runProfile(50, 0);
-    // await runProfile(100, 0);
-    // await runProfile(200, 0);
-    // await runProfile(400, 0);
-    // await runProfile(800, 0);
-    // await runProfile(1600, 0);
-    // await runProfile(3200, 0);
+    await runProfile(5, 0);
+    await runProfile(10, 0);
+    await runProfile(20, 0);
+    await runProfile(50, 0);
+    await runProfile(100, 0);
+    await runProfile(200, 0);
+    await runProfile(400, 0);
+    await runProfile(800, 0);
+    await runProfile(1600, 0);
+    await runProfile(3200, 0);
     await runProfile(6400, 0);
   } finally {
     saveTimerResults();

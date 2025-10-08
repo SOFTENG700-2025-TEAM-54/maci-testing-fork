@@ -5,9 +5,7 @@ import { Keypair, Message, PublicKey, VoteCommand } from "@maci-protocol/domaino
 import { hash } from "crypto";
 import fs, { existsSync, mkdirSync, rmdirSync } from "fs";
 
-import { Proof, ProofGenerator } from "../ts";
-
-import { loadCircuitInputs, saveCircuitInputs } from "./circuitToJson";
+import { ProofGenerator } from "../ts";
 
 export const VOICE_CREDIT_BALANCE = 1n;
 export const DURATION = 30;
@@ -36,17 +34,11 @@ const TIMERS = {
   DEPLOY_POLL: "DEPLOY_POLL",
   UPDATE_POLL: "UPDATE_POLL",
   JOIN_POLL: "JOIN_POLL",
+  PREPARING_VALID_VOTES: "PREPARING_VALID_VOTES",
   TOTAL_VALID_VOTES: "TOTAL_VALID_VOTES",
-  TOTAL_INVALID_VOTES: "TOTAL_INVALID_VOTES",
   PROCESS_MESSAGES: "PROCESS_MESSAGES",
   TALLY_RESULTS: "TALLY_RESULTS",
   MP_PROOFS: "MP_PROOFS",
-  SAVE_MACI_STATE: "SAVE_MACI_STATE",
-  LOAD_MACI_STATE: "LOAD_MACI_STATE",
-  SAVE_CIRCUIT_INPUTS: "SAVE_CIRCUIT_INPUTS",
-  LOAD_CIRCUIT_INPUTS: "LOAD_CIRCUIT_INPUTS",
-  PREPARING_VALID_VOTES: "PREPARING_VALID_VOTES",
-  VALIDATE_PROOFS: "VALIDATE_PROOFS",
   TALLY_PROOFS: "TALLY_PROOFS",
 };
 
@@ -91,7 +83,12 @@ function saveTimerResult(numUsers: number, numInvalidVotes: number) {
 }
 
 function saveTimerResults() {
-  const profileName = `Profile_${new Date().toISOString()}`;
+  const fileName =
+    __filename
+      .split("/")
+      .pop()
+      ?.replace(/\.[^/.]+$/, "") || "unknown_file";
+  const profileName = `Profile_${fileName}_${new Date().toISOString()}`;
   fs.writeFileSync(`./${profileName}.json`, JSON.stringify(timerResultsS, null, 2));
 }
 
@@ -179,28 +176,6 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   });
   endTimer(TIMERS.TOTAL_VALID_VOTES, "Total valid votes time");
 
-  // startTimer(TIMERS.TOTAL_INVALID_VOTES);
-  // for (let i = 0; i < numInvalidVotes; i += 1) {
-  //   const userIndex = i % numUsers;
-  //   const userKeypair = users[userIndex]; // Use modulo to avoid index out of bounds
-  //   const command = new VoteCommand(
-  //     BigInt(userIndex + 1),
-  //     userKeypair.publicKey,
-  //     1n,
-  //     VOICE_CREDIT_BALANCE * 2n, // invalid vote weight
-  //     1n,
-  //     BigInt(pollId),
-  //   );
-
-  //   const signature = command.sign(userKeypair.privateKey);
-
-  //   const ecdhKeypair = new Keypair();
-  //   const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
-  //   const message = command.encrypt(signature, sharedKey);
-  //   poll.publishMessage(message, ecdhKeypair.publicKey);
-  // }
-  // endTimer(TIMERS.TOTAL_INVALID_VOTES, "Total invalid votes time");
-
   console.log("Processing all messages...");
   startTimer(TIMERS.PROCESS_MESSAGES);
   poll.processAllMessages();
@@ -209,16 +184,6 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   if (poll.ballots.length !== numUsers + 1) {
     throw new Error(`Expected ${numUsers + 1} ballots, but got ${poll.ballots.length}`);
   }
-
-  // startTimer(TIMERS.TALLY_RESULTS);
-  // while (poll.hasUntalliedBallots()) {
-  //   poll.tallyVotes();
-  // }
-  // if (poll.tallyResult[0] !== BigInt(numUsers)) {
-  //   throw new Error(`Expected tally result to be ${numUsers}, but got ${poll.tallyResult[0]}`);
-  // }
-
-  // endTimer(TIMERS.TALLY_RESULTS, `Tally results for poll ${pollId}`);
 
   // ---------------------------------------------------
   // 🆕  PROOF GENERATION BENCH SECTION
@@ -242,28 +207,9 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
   await proofGen.generateMpProofs(); // message-processing proofs
   endTimer(TIMERS.MP_PROOFS, "MP proof gen");
 
-  startTimer(TIMERS.SAVE_CIRCUIT_INPUTS);
-  const circuitInputsMem = proofGen.generateTallyCircuitInputs();
-  saveCircuitInputs(circuitInputsMem, "./bench_proofs/circuit-inputs.json");
-  endTimer(TIMERS.SAVE_CIRCUIT_INPUTS, "Save circuit inputs");
-
-  startTimer(TIMERS.LOAD_CIRCUIT_INPUTS);
-  const circuitInputs = loadCircuitInputs("./bench_proofs/circuit-inputs.json");
-  endTimer(TIMERS.LOAD_CIRCUIT_INPUTS, "Load circuit inputs");
-
-  const proofs: Proof[] = [];
-  for (let i = 0; i < circuitInputs.length / 5; i += 1) {
-    startTimer(`PROOF_GEN_BATCH_${i}`);
-    const tallyCircuitInputs = circuitInputs.slice(i * 5, i * 5 + 5);
-    // eslint-disable-next-line no-await-in-loop
-    const proofBatch = await proofGen.generateProofsForCircuitInputs(tallyCircuitInputs);
-    proofs.push(...proofBatch);
-    endTimer(`PROOF_GEN_BATCH_${i}`, `Tally proof gen batch ${i}`);
-  }
-
-  startTimer(TIMERS.VALIDATE_PROOFS);
-  await proofGen.validateProofs("benchmark", proofs, circuitInputs[circuitInputs.length - 1]);
-  endTimer(TIMERS.VALIDATE_PROOFS, "Tally proof gen");
+  startTimer(TIMERS.TALLY_PROOFS);
+  await proofGen.generateTallyProofs("benchmark");
+  endTimer(TIMERS.TALLY_PROOFS, "Tally proof gen");
 
   endTimer(TIMERS.TOTAL_TIME, "Total time for the profile run");
   saveTimerResult(numUsers, numInvalidVotes);
@@ -271,17 +217,17 @@ async function runProfile(numUsers: number, numInvalidVotes: number) {
 
 async function runBenchmarks() {
   try {
-    // await runProfile(5, 0);
-    // await runProfile(10, 0);
-    // await runProfile(20, 0);
-    // await runProfile(50, 0);
+    await runProfile(5, 0);
+    await runProfile(10, 0);
+    await runProfile(20, 0);
+    await runProfile(50, 0);
     await runProfile(100, 0);
     await runProfile(200, 0);
     await runProfile(400, 0);
     await runProfile(800, 0);
     await runProfile(1600, 0);
-    // await runProfile(3200, 0);
-    // await runProfile(6400, 0);
+    await runProfile(3200, 0);
+    await runProfile(6400, 0);
   } finally {
     saveTimerResults();
   }

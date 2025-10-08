@@ -285,6 +285,145 @@ export class ProofGenerator {
    * @param chainId - current chain id
    * @returns tally proofs
    */
+  async generateTallyProofs(
+    networkName: string,
+    chainId?: string,
+    options?: IGenerateProofsOptions,
+  ): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
+    logMagenta({ text: info(`Generating proofs of vote tallying...`) });
+    performance.mark("tally-proofs-start");
+
+    const { tallyBatchSize } = this.poll.batchSizes;
+    const numStateLeaves = this.poll.pollStateLeaves.length;
+    let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
+    if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
+      totalTallyBatches += 1;
+    }
+
+    try {
+      let tallyCircuitInputs: TCircuitInputs;
+      const inputs: TCircuitInputs[] = [];
+
+      while (this.poll.hasUntalliedBallots()) {
+        tallyCircuitInputs = this.poll.tallyVotes() as unknown as TCircuitInputs;
+
+        inputs.push(tallyCircuitInputs);
+
+        logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
+      }
+
+      logMagenta({ text: info("Wait until proof generation is finished") });
+
+      const tallyVerifyingKey = await extractVerifyingKey(this.tally.zkey, false);
+
+      const proofs = await Promise.all(
+        inputs.map((circuitInputs, index) =>
+          this.generateProofs(circuitInputs, this.tally, `tally_${index}.json`, tallyVerifyingKey).then((data) => {
+            options?.onBatchComplete?.({ current: index, total: totalTallyBatches, proofs: data });
+            return data;
+          }),
+        ),
+      ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
+
+      logGreen({ text: success("Proof generation is finished") });
+
+      // cleanup threads
+      await cleanThreads();
+
+      // verify the results
+      // Compute newResultsCommitment
+      const newResultsCommitment = generateTreeCommitment(
+        this.poll.tallyResult,
+        BigInt(asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish)),
+        this.poll.treeDepths.voteOptionTreeDepth,
+      );
+
+      // compute newSpentVoiceCreditsCommitment
+      const newSpentVoiceCreditsCommitment = hashLeftRight(
+        this.poll.totalSpentVoiceCredits,
+        BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
+      );
+
+      let newPerVoteOptionSpentVoiceCreditsCommitment: bigint | undefined;
+      let newTallyCommitment: bigint;
+
+      // create the tally file data to store for verification later
+      const tallyFileData: TallyData = {
+        maci: this.maciContractAddress,
+        pollId: this.poll.pollId.toString(),
+        network: networkName,
+        chainId,
+        mode: this.mode,
+        tallyAddress: this.tallyContractAddress,
+        newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
+        results: {
+          tally: this.poll.tallyResult.map((x) => x.toString()),
+          salt: asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish),
+          commitment: asHex(newResultsCommitment),
+        },
+        totalSpentVoiceCredits: {
+          spent: this.poll.totalSpentVoiceCredits.toString(),
+          salt: asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish),
+          commitment: asHex(newSpentVoiceCreditsCommitment),
+        },
+      };
+
+      if (this.mode === EMode.QV) {
+        // Compute newPerVoteOptionSpentVoiceCreditsCommitment
+        newPerVoteOptionSpentVoiceCreditsCommitment = generateTreeCommitment(
+          this.poll.perVoteOptionSpentVoiceCredits,
+          BigInt(asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
+          this.poll.treeDepths.voteOptionTreeDepth,
+        );
+
+        // Compute newTallyCommitment
+        newTallyCommitment = hash3([
+          newResultsCommitment,
+          newSpentVoiceCreditsCommitment,
+          newPerVoteOptionSpentVoiceCreditsCommitment,
+        ]);
+
+        // update perVoteOptionSpentVoiceCredits in the tally file data
+        tallyFileData.perVoteOptionSpentVoiceCredits = {
+          tally: this.poll.perVoteOptionSpentVoiceCredits.map((x) => x.toString()),
+          salt: asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish),
+          commitment: asHex(newPerVoteOptionSpentVoiceCreditsCommitment),
+        };
+      } else {
+        newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
+      }
+
+      await fs.promises.writeFile(this.tallyOutputFile, JSON.stringify(tallyFileData, null, 4));
+
+      logGreen({ text: success(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`) });
+
+      // compare the commitments
+      if (asHex(newTallyCommitment) === tallyFileData.newTallyCommitment) {
+        logGreen({ text: success("The tally commitment is correct") });
+      } else {
+        throw new Error("Error: the newTallyCommitment is invalid.");
+      }
+
+      performance.mark("tally-proofs-end");
+      performance.measure("Generate tally proofs", "tally-proofs-start", "tally-proofs-end");
+
+      options?.onComplete?.(proofs, tallyFileData);
+
+      return { proofs, tallyData: tallyFileData };
+    } catch (error) {
+      options?.onFail?.(error as Error);
+
+      throw error;
+    }
+  }
+
+  /**
+   * Generate tally proofs
+   *
+   * @param networkName - current network name
+   * @param chainId - current chain id
+   * @returns tally proofs
+   */
   async validateProofs(
     networkName: string,
     proofs: Proof[],
@@ -401,6 +540,7 @@ export class ProofGenerator {
   ): Promise<Proof[]> {
     const proofs: Proof[] = [];
 
+    console.log(circuitFiles.wasm ? "Using snarkjs" : "Using rapidsnark");
     const { proof, publicSignals } = circuitFiles.wasm
       ? await generateProofSnarkjs({
           inputs: circuitInputs,

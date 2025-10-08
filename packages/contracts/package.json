@@ -34,7 +34,9 @@
     "access": "public"
   },
   "scripts": {
-    "custom-benchmarks": "tsx __custom_benchmarks__/index.ts",
+    "proof_bench_1": "tsx __custom_benchmarks__/initial_proof_gen_work.ts",
+    "proof_bench_2": "tsx __custom_benchmarks__/split_out_client_side_work.ts",
+    "proof_bench_3": "tsx __custom_benchmarks__/parallelized_proof_gen.ts",
     "speed-up-measurement": "tsx __custom_benchmarks__/speed_measurement.ts",
     "watch": "tsc --watch",
     "hardhat": "hardhat node",
