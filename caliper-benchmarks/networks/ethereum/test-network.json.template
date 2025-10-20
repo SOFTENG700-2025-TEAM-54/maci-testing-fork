@@ -1,0 +1,25 @@
+{
+  "name": "MACI-Ethereum-Test",
+  "version": "2.0.0",
+  "caliper": {
+    "blockchain": "ethereum"
+  },
+  "ethereum": {
+    "url": "REPLACE_WITH_ENV_ETHEREUM_RPC_URL",
+    "contractDeployerAddress": "REPLACE_WITH_ENV_CONTRACT_DEPLOYER_ADDRESS",
+    "contractDeployerAddressPrivateKey": "REPLACE_WITH_ENV_CONTRACT_DEPLOYER_PRIVATE_KEY",
+    "fromAddressSeed": "REPLACE_WITH_ENV_FROM_ADDRESS_SEED",
+    "transactionConfirmationBlocks": 1,
+    "contracts": {
+      "Poll": {
+        "estimateGas": true,
+        "gas": {
+          "query": 100000,
+          "transfer": 70000
+        },
+        "address": "REPLACE_WITH_ENV_POLL_CONTRACT_ADDRESS",
+        "abi": []
+      }
+    }
+  }
+}

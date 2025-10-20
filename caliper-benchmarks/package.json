@@ -1,12 +1,20 @@
 {
   "name": "caliper-benchmarks",
   "version": "1.0.0",
-  "description": "",
+  "description": "Hyperledger Caliper benchmarks for MACI Poll contract vote submissions",
   "main": "index.js",
   "scripts": {
+    "generate-config": "node scripts/generate-config.js",
+    "benchmark": "npm run generate-config && npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networks/ethereum/test-network.json --caliper-benchconfig benchmarks/scenario/simple/config.yaml --caliper-flow-only-test",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "maci",
+    "benchmark",
+    "caliper",
+    "ethereum",
+    "blockchain"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -14,6 +22,7 @@
     "@hyperledger/caliper-ethereum": "^0.6.0",
     "@maci-protocol/domainobjs": "^0.0.0-ci.26f28d6",
     "@maci-protocol/sdk": "^0.0.0-ci.26f28d6",
+    "dotenv": "^16.0.0",
     "ethers": "^6.15.0",
     "web3": "^1.3.0"
   }
